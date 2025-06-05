@@ -1,0 +1,182 @@
+{% extends 'predictor/base.html' %}
+{% block title %}Kế hoạch cải thiện{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Kế hoạch cải thiện học tập</h4>
+                    <a href="{% url 'student_progress' student_id=prediction.student_id %}" class="btn btn-light btn-sm">
+                        <i class="bi bi-graph-up"></i> Xem tiến độ
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Thông tin học sinh</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Tên học sinh:</th>
+                                    <td>{{ prediction.student_name|default:"Chưa có tên" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mã học sinh:</th>
+                                    <td>{{ prediction.student_id|default:"Chưa có mã" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Điểm G1:</th>
+                                    <td>{{ prediction.g1_score }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Điểm G2:</th>
+                                    <td>{{ prediction.g2_score }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Kết quả dự đoán</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Điểm dự đoán:</th>
+                                    <td>{{ prediction.predicted_score|floatformat:2 }}/20</td>
+                                </tr>
+                                <tr>
+                                    <th>Phân loại:</th>
+                                    <td>
+                                        {% if prediction.result_category == "Xuất sắc" %}
+                                        <span class="badge bg-success">Xuất sắc</span>
+                                        {% elif prediction.result_category == "Khá" %}
+                                        <span class="badge bg-primary">Khá</span>
+                                        {% elif prediction.result_category == "Trung bình" %}
+                                        <span class="badge bg-warning text-dark">Trung bình</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Cần cải thiện</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Điểm thực tế:</th>
+                                    <td>
+                                        {% if prediction.actual_score %}
+                                        {{ prediction.actual_score|floatformat:2 }}/20
+                                        {% else %}
+                                        <a href="{% url 'update_score' prediction.id %}" class="btn btn-sm btn-outline-primary">
+                                            Nhập điểm
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Tiến độ cải thiện:</th>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: {{ completion_rate|floatformat:0 }}%" 
+                                                aria-valuenow="{{ completion_rate|floatformat:0 }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ completion_rate|floatformat:0 }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ completed_actions }}/{{ total_actions }} hành động hoàn thành</small>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if action_forms %}
+                    <h5 class="mb-3">Các hành động cải thiện</h5>
+                    <div class="accordion" id="improvementAccordion">
+                        {% for item in action_forms %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ item.action.id }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse{{ item.action.id }}">
+                                    <div class="d-flex justify-content-between w-100 align-items-center pe-3">
+                                        <span>{{ item.action.area }}</span>
+                                        {% if item.action.completed %}
+                                        <span class="badge bg-success ms-2">Hoàn thành</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark ms-2">Đang thực hiện</span>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ item.action.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                data-bs-parent="#improvementAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p><strong>Mức hiện tại:</strong> {{ item.action.current_level }}</p>
+                                            <p><strong>Mức mục tiêu:</strong> {{ item.action.target_level }}</p>
+                                            <div class="mb-3">
+                                                <strong>Các bước thực hiện:</strong>
+                                                <div class="ms-3">
+                                                    {% for line in item.action.action_description.split %}
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" disabled {% if item.action.completed %}checked{% endif %}>
+                                                            <label class="form-check-label">{{ line }}</label>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    Cập nhật trạng thái
+                                                </div>
+                                                <div class="card-body">
+                                                    <form method="post">
+                                                        {% csrf_token %}
+                                                        {{ item.form.action_id }}
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="completed_{{ item.action.id }}" 
+                                                                name="completed" {% if item.action.completed %}checked{% endif %} 
+                                                                onchange="this.form.submit()">
+                                                            <label class="form-check-label" for="completed_{{ item.action.id }}">
+                                                                Đã hoàn thành
+                                                            </label>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if prediction.improvement_plan %}
+                    <div class="card mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Kế hoạch học tập hàng tuần</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="markdown-content">
+                                {{ prediction.improvement_plan|linebreaksbr|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'prediction_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    <i class="bi bi-house"></i> Trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

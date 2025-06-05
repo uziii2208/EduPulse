@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Biểu đồ trực quan hóa dữ liệu</h2>
+    
+    {% if no_data %}
+        <div class="alert alert-info">
+            <p>Chưa có đủ dữ liệu để hiển thị biểu đồ. Vui lòng thêm dự đoán và điểm thực tế.</p>
+        </div>
+    {% else %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Phân phối học sinh theo loại kết quả</h5>
+                    </div>
+                    <div class="card-body">
+                        <img src="data:image/png;base64,{{ score_distribution_chart }}" class="img-fluid" alt="Phân phối điểm">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">So sánh điểm dự đoán và điểm thực tế</h5>
+                    </div>
+                    <div class="card-body">
+                        <img src="data:image/png;base64,{{ prediction_vs_actual_chart }}" class="img-fluid" alt="So sánh điểm dự đoán và thực tế">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Mối quan hệ giữa thời gian học và điểm số</h5>
+                    </div>
+                    <div class="card-body">
+                        <img src="data:image/png;base64,{{ studytime_score_chart }}" class="img-fluid" alt="Thời gian học và điểm số">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">Ảnh hưởng của việc vắng mặt đến điểm số</h5>
+                    </div>
+                    <div class="card-body">
+                        <img src="data:image/png;base64,{{ absence_score_chart }}" class="img-fluid" alt="Vắng mặt và điểm số">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Ảnh hưởng của các yếu tố đến điểm số</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="data:image/png;base64,{{ radar_chart }}" class="img-fluid" alt="Yếu tố ảnh hưởng">
+                        <div class="mt-3">
+                            <span class="badge bg-primary me-2">+</span> Tác động tích cực
+                            <span class="badge bg-danger ms-3 me-2">-</span> Tác động tiêu cực
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="{% url 'prediction_stats' %}" class="btn btn-primary">Xem thống kê chi tiết</a>
+            <a href="{% url 'export_report' 'excel' %}" class="btn btn-success">Xuất báo cáo Excel</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

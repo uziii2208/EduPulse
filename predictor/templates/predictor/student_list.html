@@ -1,0 +1,94 @@
+{% extends 'predictor/base.html' %}
+{% block title %}Danh sách học sinh{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Danh sách học sinh theo dõi</h4>
+            <a href="{% url 'home' %}" class="btn btn-light btn-sm">
+                <i class="bi bi-plus-lg"></i> Tạo dự đoán mới
+            </a>
+        </div>
+        <div class="card-body">
+            {% if students %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã học sinh</th>
+                            <th>Tên học sinh</th>
+                            <th>Số dự đoán</th>
+                            <th>Điểm gần nhất</th>
+                            <th>Phân loại</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.student_id }}</td>
+                            <td>{{ student.student_name|default:"Không có tên" }}</td>
+                            <td>{{ student.prediction_count }}</td>
+                            <td>
+                                {% if student.latest_score %}
+                                {{ student.latest_score|floatformat:2 }}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.latest_category == "Xuất sắc" %}
+                                <span class="badge bg-success">Xuất sắc</span>
+                                {% elif student.latest_category == "Khá" %}
+                                <span class="badge bg-primary">Khá</span>
+                                {% elif student.latest_category == "Trung bình" %}
+                                <span class="badge bg-warning text-dark">Trung bình</span>
+                                {% else %}
+                                <span class="badge bg-danger">Cần cải thiện</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'student_progress' student_id=student.student_id %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-graph-up"></i> Tiến độ
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'home' %}?student_id={{ student.student_id }}">
+                                                <i class="bi bi-plus-circle"></i> Tạo dự đoán mới
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Chưa có dữ liệu học sinh. Hãy <a href="{% url 'home' %}" class="alert-link">tạo dự đoán mới</a> với thông tin học sinh.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'prediction_list' %}" class="btn btn-secondary">
+            <i class="bi bi-list-ul"></i> Danh sách tất cả dự đoán
+        </a>
+        <a href="{% url 'prediction_stats' %}" class="btn btn-info text-white">
+            <i class="bi bi-bar-chart-fill"></i> Thống kê
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-primary">
+            <i class="bi bi-house"></i> Trang chủ
+        </a>
+    </div>
+</div>
+{% endblock %}

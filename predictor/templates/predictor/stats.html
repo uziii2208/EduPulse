@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Thống kê dự đoán điểm số</h2>
+    
+    {% if no_data %}
+        <div class="alert alert-info mt-4">
+            Chưa có dữ liệu điểm thực tế để thống kê. Hãy cập nhật điểm thực tế cho các dự đoán trước đó.
+        </div>
+        <a href="{% url 'prediction_list' %}" class="btn btn-primary">Xem danh sách dự đoán</a>
+    {% else %}
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Thống kê tổng quan
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Tổng số dự đoán có điểm thực tế:</strong> {{ stats.total_predictions }}</p>
+                        <p><strong>Điểm dự đoán trung bình:</strong> {{ stats.avg_predicted|floatformat:2 }}</p>
+                        <p><strong>Điểm thực tế trung bình:</strong> {{ stats.avg_actual|floatformat:2 }}</p>
+                        <p><strong>Sai số trung bình:</strong> {{ stats.avg_diff|floatformat:2 }}</p>
+                        <p><strong>Sai số lớn nhất:</strong> {{ stats.max_diff|floatformat:2 }}</p>
+                        <p><strong>Sai số nhỏ nhất:</strong> {{ stats.min_diff|floatformat:2 }}</p>
+                        <p><strong>Độ lệch chuẩn sai số:</strong> {{ stats.std_diff|floatformat:2 }}</p>
+                        <p><strong>Tỷ lệ dự đoán chính xác (sai số < 1.0):</strong> {{ stats.accuracy_rate|floatformat:1 }}%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Thống kê theo phân loại
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Phân loại</th>
+                                    <th>Số lượng</th>
+                                    <th>Sai số TB</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in category_stats %}
+                                <tr>
+                                    <td>{{ category.name }}</td>
+                                    <td>{{ category.count }}</td>
+                                    <td>{{ category.avg_diff|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                Dự đoán gần đây có điểm thực tế
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Học sinh</th>
+                            <th>Điểm G2</th>
+                            <th>Dự đoán</th>
+                            <th>Thực tế</th>
+                            <th>Sai số</th>
+                            <th>Phân loại</th>
+                            <th>Ngày cập nhật</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pred in recent_predictions %}
+                        <tr>
+                            <td>{{ pred.student_name|default:"Không tên" }}</td>
+                            <td>{{ pred.g2_score }}</td>
+                            <td>{{ pred.predicted_score|floatformat:2 }}</td>
+                            <td>{{ pred.actual_score|floatformat:2 }}</td>
+                            <td>{{ pred.prediction_diff|floatformat:2 }}</td>
+                            <td>{{ pred.result_category }}</td>
+                            <td>{{ pred.updated_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{% url 'prediction_list' %}" class="btn btn-primary">Xem tất cả dự đoán</a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">Quay lại trang chủ</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

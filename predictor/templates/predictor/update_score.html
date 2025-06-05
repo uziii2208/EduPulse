@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Cập nhật điểm thực tế</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Thông tin dự đoán
+        </div>
+        <div class="card-body">
+            <p><strong>Học sinh:</strong> {{ prediction.student_name|default:"Không có tên" }}</p>
+            <p><strong>Mã học sinh:</strong> {{ prediction.student_id|default:"Không có mã" }}</p>
+            <p><strong>Điểm G1:</strong> {{ prediction.g1_score }}</p>
+            <p><strong>Điểm G2:</strong> {{ prediction.g2_score }}</p>
+            <p><strong>Điểm dự đoán:</strong> {{ prediction.predicted_score|floatformat:2 }}</p>
+            <p><strong>Phân loại:</strong> {{ prediction.result_category }}</p>
+        </div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.actual_score.label_tag }}
+            {{ form.actual_score }}
+            {% if form.actual_score.errors %}
+            <div class="text-danger">
+                {{ form.actual_score.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary mt-3">Cập nhật điểm thực tế</button>
+        <a href="{% url 'prediction_list' %}" class="btn btn-secondary mt-3">Quay lại danh sách</a>
+    </form>
+</div>
+{% endblock %}

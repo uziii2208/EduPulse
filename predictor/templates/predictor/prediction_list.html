@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Danh sách dự đoán điểm số</h2>
+    
+    <div class="mt-3 mb-4">
+        <a href="{% url 'home' %}" class="btn btn-primary">Tạo dự đoán mới</a>
+        <a href="{% url 'prediction_stats' %}" class="btn btn-success">Xem thống kê</a>
+    </div>
+    
+    {% if predictions %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Học sinh</th>
+                    <th>G1</th>
+                    <th>G2</th>
+                    <th>Dự đoán</th>
+                    <th>Thực tế</th>
+                    <th>Sai số</th>
+                    <th>Phân loại</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pred in predictions %}
+                <tr>
+                    <td>{{ pred.id }}</td>
+                    <td>{{ pred.student_name|default:"Không tên" }}</td>
+                    <td>{{ pred.g1_score }}</td>
+                    <td>{{ pred.g2_score }}</td>
+                    <td>{{ pred.predicted_score|floatformat:2 }}</td>
+                    <td>{% if pred.actual_score %}{{ pred.actual_score|floatformat:2 }}{% else %}Chưa có{% endif %}</td>
+                    <td>{% if pred.prediction_diff %}{{ pred.prediction_diff|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td>{{ pred.result_category }}</td>
+                    <td>{{ pred.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if not pred.actual_score %}
+                            <a href="{% url 'update_score' pred.id %}" class="btn btn-sm btn-primary">Nhập điểm thực tế</a>
+                        {% else %}
+                            <a href="{% url 'update_score' pred.id %}" class="btn btn-sm btn-secondary">Cập nhật điểm</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">
+            Chưa có dự đoán nào được tạo.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
